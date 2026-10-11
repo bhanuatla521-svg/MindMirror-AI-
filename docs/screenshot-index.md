@@ -31,6 +31,7 @@ This index catalogs all genuine screenshots captured from the running MindMirror
 | 22 | `22-theme-customization.png` | **Visual Theme & Dark Mode** | Clean dark aesthetic toggle demonstrating seamless contrast switching across canvas and components. | [Theme & Dark Mode](function-reference.md#21-theme--dark-mode-customization) | ✅ Verified Active |
 | 23 | `23-safety-modal.png` | **Compassionate Crisis Safeguard Modal** | 24/7 crisis resources overlay (988 US/Canada, 111 UK, 13 11 14 Australia) triggered manually or via distress language detection. | [Safety Notice Safeguard](function-reference.md#22-mental-health-safety-safeguard) | ✅ Verified Active |
 | 24 | `24-visual-guide-docs.png` | **In-App Visual Documentation & Guidebook** | In-app searchable feature documentation system with embedded screenshots, code internals, and tutorials. | [In-App Visual Guide](feature-reference.md#feature-in-app-visual-documentation--guidebook) | ✅ Verified Active |
+| 25 | `single_page_docs_preview.png` | **Single-Page Master Documentation Hub** | Comprehensive single-page repository documentation portal featuring tree explorer, folder-by-folder breakdowns, architecture diagrams, and interactive gallery. | [Single-Page Docs](#) | ✅ Verified Active |
 
 ---
 

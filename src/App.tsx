@@ -25,6 +25,7 @@ import { SpeechCoachingReportView } from './components/studio/SpeechCoachingRepo
 import { ThinkingGymView } from './components/thinking/ThinkingGymView';
 import { IntrovertProgramView } from './components/program/IntrovertProgramView';
 import { SpeechProgressView } from './components/progress/SpeechProgressView';
+import { SinglePageDocumentationView } from './components/docs/SinglePageDocumentationView';
 import { VisualGuideView } from './components/docs/VisualGuideView';
 
 import {
@@ -60,7 +61,9 @@ export const App: React.FC = () => {
       case 'reports': return <MonthlyYearlyReports />;
       case 'insights': return <PersonalInsightsView />;
       case 'settings': return <SettingsAndPrivacy />;
-      case 'visual_guide': return <VisualGuideView />;
+      case 'docs':
+      case 'visual_guide':
+        return <SinglePageDocumentationView />;
       default: return <OverviewDashboard />;
     }
   };

@@ -53,7 +53,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenCoach, mobileOpen, onClo
     { id: 'weekly', label: 'Weekly Review', icon: CalendarCheck },
     { id: 'reports', label: 'Reports & Export', icon: FileText },
     { id: 'insights', label: 'Personal Insights', icon: Lightbulb },
-    { id: 'visual_guide', label: 'Visual Guide & Docs', icon: Layers },
+    { id: 'docs', label: 'Repo Docs & Architecture', icon: Layers, highlight: true },
     { id: 'settings', label: 'Settings & Privacy', icon: Settings },
   ];
 
