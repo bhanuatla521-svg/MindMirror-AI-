@@ -6,6 +6,17 @@ MindMirror AI is an evidence-based personal communication and cognitive training
 
 ---
 
+## 📚 Documentation & User Guides
+
+Explore our complete documentation, beginner guides, and genuine visual walkthroughs:
+
+- 📖 **[Beginner's Guidebook](docs/beginner-guide.md)** — Step-by-step tutorial for getting started, running the app on any device, and practicing daily.
+- 🔍 **[Comprehensive Function Reference](docs/function-reference.md)** — Detailed operational and code reference for all 22+ modules, features, and controls.
+- 📸 **[Screenshot Index](docs/screenshot-index.md)** — Visual catalog of all 22 genuine 1440×900 UI screenshots.
+- 🛠️ **[Troubleshooting Guide](docs/troubleshooting.md)** — Quick fixes for microphone access, port conflicts, and offline fallback mode.
+
+---
+
 ## 🌟 Core Modules
 
 ### 1. 🎙️ Voice Practice Studio (Phase 2 & 3)
