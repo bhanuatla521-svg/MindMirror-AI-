@@ -457,3 +457,38 @@ This reference documents every user-facing feature, workflow, and interactive co
 **Location:** Click the **Shield icon** in the top header, or triggers automatically if severe distress phrases appear in any reflection.
 
 **Related functions:** `checkSafetyTriggers()`, `setSafetyAlertOpen()`.
+
+---
+
+### Feature: In-App Visual Documentation & Guidebook
+
+**Screenshot:**  
+![In-App Visual Documentation](screenshots/24-visual-guide-docs.png)
+
+**Purpose:** An integrated, searchable visual documentation system embedded directly into the running web application. Enables users to inspect genuine UI screenshots, element-by-element annotations, step-by-step tutorials, code internals, and troubleshooting advice without leaving the platform.
+
+**Location:** **Journal & Reflection** &rarr; **Visual Guide & Docs** (`activeTab: 'visual_guide'`).
+
+**Why it matters:** Eliminates the cognitive friction of having to leave the application to read documentation files on GitHub. Users can learn a feature visually and immediately click **Launch This Feature** to practice it in real-time.
+
+**Prerequisites:** None. Available directly on both desktop and mobile layouts.
+
+**How to use it:**
+1. Click **Visual Guide & Docs** in the left sidebar.
+2. Filter by category (e.g., *Speech & Thinking*, *Journal & Reflection*, or *System & Privacy*), or use the instant search input.
+3. Select any feature in the left list to load its comprehensive dossier.
+4. Study the genuine screenshot, element breakdown, and step-by-step tutorial.
+5. Click the terracotta **Launch This Feature** button in the top right to immediately navigate to the active tool.
+
+**Inputs:** Search query text, category pill clicks, and feature list selections.
+
+**Expected output:** High-resolution screenshot, annotated element cards, numbered tutorial steps, practical inputs/outputs, and code references.
+
+**Example:** Selecting **Voice Practice Studio** loads its full interface breakdown, showing how WPM and filler word density are calculated, along with a button to launch directly into recording.
+
+**How it works:** Implemented in `src/components/docs/VisualGuideView.tsx`, rendering data from a structured `FEATURE_DOCS` dictionary with responsive layouts and instant tab navigation via `setActiveTab()`.
+
+**Related functions:** `setActiveTab()` in `src/context/AppContext.tsx`.
+
+**Limitations:** Requires browser access to `/screenshots/*.png` served from Vite's `public` directory.
+

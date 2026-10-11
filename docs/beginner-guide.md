@@ -287,6 +287,9 @@ A: No. MindMirror strictly provides pedagogical, evidence-based communication co
 
 ## 13. Quick Links
 
-- [Function Reference Guide](function-reference.md)
-- [Screenshot Index](screenshot-index.md)
+- [User-Facing Feature Reference](feature-reference.md)
+- [Code-Level Function Reference](function-reference.md)
+- [Screenshot Catalog Index](screenshot-index.md)
+- [System Architecture Specification](architecture.md)
+- [Testing & Quality Assurance Guide](testing.md)
 - [Troubleshooting Guide](troubleshooting.md)

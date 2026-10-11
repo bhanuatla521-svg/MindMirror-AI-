@@ -23,8 +23,10 @@ MindMirror AI is an evidence-based personal communication practice studio, cogni
 | ![Overview Dashboard](docs/screenshots/01-overview-dashboard.png) | ![Voice Practice Studio](docs/screenshots/02-voice-practice-studio.png) |
 | **Evidence-Based Coaching Report** | **The Thinking Gym** |
 | ![Evidence Coaching Report](docs/screenshots/04-evidence-coaching-report.png) | ![The Thinking Gym](docs/screenshots/05-thinking-gym-catalog.png) |
+| **Introvert Practice Programme** | **In-App Visual Documentation** |
+| ![Introvert Programme](docs/screenshots/07-introvert-program-curriculum.png) | ![In-App Visual Guide](docs/screenshots/24-visual-guide-docs.png) |
 
-*(Explore all 22 genuine interface captures in the [Screenshot Catalog Index](docs/screenshot-index.md))*
+*(Explore all 23 genuine interface captures in the [Screenshot Catalog Index](docs/screenshot-index.md))*
 
 ---
 
