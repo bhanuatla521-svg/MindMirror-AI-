@@ -1,353 +1,230 @@
-# MindMirror AI — Comprehensive Function Reference
+# MindMirror AI — Code-Level Function & Architecture Reference
 
-This document provides a complete technical and operational reference for every user-facing feature and core backend function in MindMirror AI.
+This document provides a comprehensive technical reference for the core functions, services, algorithms, and interfaces implemented across the MindMirror AI codebase.
 
 ---
 
 ## Table of Contents
-1. [Overview Dashboard](#1-overview-dashboard)
-2. [Voice Practice Studio](#2-voice-practice-studio)
-3. [Sample Answer & Metric Calculation](#3-sample-answer--metric-calculation)
-4. [Evidence-Based Coaching Report](#4-evidence-based-coaching-report)
-5. [The Thinking Gym](#5-the-thinking-gym)
-6. [Introvert Practice Programme](#6-introvert-practice-programme)
-7. [Speech & Thinking Stats](#7-speech--thinking-stats)
-8. [Daily Diary Reflection](#8-daily-diary-reflection)
-9. [AI Daily Review](#9-ai-daily-review)
-10. [Psychological Growth (30 Dimensions)](#10-psychological-growth-30-dimensions)
-11. [Emotional Wellness](#11-emotional-wellness)
-12. [Social Intelligence](#12-social-intelligence)
-13. [Critical Thinking Toolkit](#13-critical-thinking-toolkit)
-14. [Habits & Discipline](#14-habits--discipline)
-15. [Goals & Action Plans](#15-goals--action-plans)
-16. [Weekly Review Retrospective](#16-weekly-review-retrospective)
-17. [Reports & Data Export](#17-reports--data-export)
-18. [Personal Insights Engine](#18-personal-insights-engine)
-19. [Settings & Privacy Center](#19-settings--privacy-center)
-20. [Conversational AI Coach Drawer](#20-conversational-ai-coach-drawer)
-21. [Theme & Dark Mode Customization](#21-theme--dark-mode-customization)
-22. [Mental Health Safety Safeguard](#22-mental-health-safety-safeguard)
+1. [Speech Analytics & Voice Engine (`src/services/speechAnalysisService.ts`)](#1-speech-analytics--voice-engine)
+2. [AI Synthesis & Safety Engine (`src/services/aiEngine.ts`)](#2-ai-synthesis--safety-engine)
+3. [Analytics & Psychological Metrics (`src/services/analyticsService.ts`)](#3-analytics--psychological-metrics)
+4. [Conversational Coach Service (`src/services/coachService.ts`)](#4-conversational-coach-service)
+5. [State Management Context (`src/context/AppContext.tsx`)](#5-state-management-context)
+6. [Backend API Routes (`server/index.ts`)](#6-backend-api-routes)
+7. [AI Provider Manager (`server/ai/provider-manager.ts`)](#7-ai-provider-manager)
+8. [Request Budget & Safeguards (`server/ai/budget-tracker.ts`)](#8-request-budget--safeguards)
+9. [In-Flight Deduplication Lock (`server/ai/dedup-lock.ts`)](#9-in-flight-deduplication-lock)
 
 ---
 
-### 1. Overview Dashboard
+## 1. Speech Analytics & Voice Engine
 
-![Overview Dashboard](screenshots/01-overview-dashboard.png)
-
-- **Purpose:** Central operational home displaying quick reflective prompts, today's Stoic quote, active behavioral metrics, Socratic inquiry questions, and quick links to core training modules.
-- **Where to find it:** Click **Overview** in the sidebar (or navigates by default on page load).
-- **Why it is useful:** Gives introverted communicators a structured, low-friction starting point each day without feeling overwhelmed by blank screens.
-- **How to use it:**
-  1. Review your current **Latest Self-Reported Metrics** (Mood, Energy, Stress, Sleep).
-  2. Click any of the pre-built prompt pills (e.g., *"What patterns appear in my last 30 days?"* or *"What could I have done differently?"*).
-  3. Read the generated Socratic reflection guidance and click **Add to Actions** to schedule behavioral micro-commitments.
-- **Inputs:** Click selection on inquiry suggestion pills or quick action buttons.
-- **Output:** Socratic reflection advice card with suggested actionable steps.
-- **Example:** Clicking *"What patterns appear in my last 30 days?"* produces a structured prompt reminding the user to evaluate emotional consistency and vocal confidence.
-- **Common mistakes:** Expecting longitudinal trends immediately when no previous journal entries exist.
-- **Limitations:** Relies on recorded entries in LocalStorage to formulate historical pattern reflections.
-- **Code Reference:**
-  - **Component:** `src/components/dashboard/OverviewDashboard.tsx`
-  - **State Hook:** `useApp()` in `src/context/AppContext.tsx`
-
----
-
-### 2. Voice Practice Studio
-
-![Voice Practice Studio](screenshots/02-voice-practice-studio.png)
-
-- **Purpose:** A private, zero-judgment audio recording studio that measures delivery mechanics (words per minute, filler words, pauses) and captures live speech transcripts.
-- **Where to find it:** Click **Voice Practice Studio** under the **Speech & Thinking** sidebar section.
-- **Why it is useful:** Allows introverts and anxious speakers to practice solo without peer pressure, establishing objective baseline vocal metrics.
-- **How to use it:**
-  1. Select a practice mode from the top tabs (*Daily Prompts*, *Impromptu*, *Interview*, *Presentation*, or *Roleplay*).
-  2. Choose a difficulty level (*Foundational*, *Intermediate*, or *Advanced*).
-  3. Click **Start Recording** and speak clearly into your microphone.
-  4. Watch the visual volume meter and real-time transcription update.
-  5. Click **Stop Recording** when finished.
-- **Inputs:** Microphone audio input via Web Audio API; optional manual text corrections.
-- **Output:** Waveform volume activity, audio playback player, live transcript, and physical delivery meters (WPM, Fillers, Pauses).
-- **Common mistakes:** Forgetting to allow microphone permissions in the browser settings.
-- **Limitations:** Real-time speech streaming requires a browser supporting the Web Speech API (Chrome/Edge/Safari).
-- **Code Reference:**
-  - **Component:** `src/components/studio/VoiceStudio.tsx`
-  - **Audio Engine:** `AudioContext`, `AnalyserNode`, and `MediaRecorder` web APIs.
+### `calculateSpeechMetrics`
+- **Location:** `src/services/speechAnalysisService.ts`
+- **Signature:**
+  ```typescript
+  export function calculateSpeechMetrics(
+    transcript: string,
+    durationSeconds: number,
+    detectedPauses: number = 0,
+    pauseDurationSeconds: number = 0
+  ): SpeechDeliveryMetrics
+  ```
+- **Purpose:** Computes deterministic physical delivery metrics including word count, words per minute (WPM), filler word frequency, filler percentage, and pace classifications without relying on external AI calls.
+- **Parameters:**
+  - `transcript` (`string`): The transcribed text of the practice session.
+  - `durationSeconds` (`number`): The elapsed audio duration in seconds.
+  - `detectedPauses` (`number`, optional): Count of measured silent intervals exceeding 1.2 seconds.
+  - `pauseDurationSeconds` (`number`, optional): Cumulative duration of silence intervals.
+- **Return Value:**
+  ```typescript
+  {
+    wordCount: number;
+    wpm: number;
+    fillerCount: number;
+    fillerPercentage: number;
+    fillerBreakdown: Record<string, number>;
+    paceRating: 'Too Slow' | 'Optimal' | 'Too Fast';
+    detectedPauses: number;
+    pauseDurationSeconds: number;
+    silencePercentage: number;
+  }
+  ```
+- **Side Effects:** Pure mathematical function; no state mutations or network calls.
+- **Example:**
+  ```typescript
+  const metrics = calculateSpeechMetrics("Um, I think, you know, we should proceed.", 10);
+  // metrics.wpm: 48, metrics.fillerCount: 2, metrics.paceRating: 'Too Slow'
+  ```
+- **Tests:** Verified in `server/test-speech.ts` (Test 1).
 
 ---
 
-### 3. Sample Answer & Metric Calculation
-
-![Sample Answer & Live Metrics](screenshots/03-voice-studio-sample-input.png)
-
-- **Purpose:** Instantly populates the Voice Studio with a verified, realistic practice answer to test speech analytics without requiring a live microphone.
-- **Where to find it:** Inside **Voice Practice Studio**, click the **Insert Sample Answer** button above the transcript box.
-- **Why it is useful:** Provides instant demonstration capability on devices without microphones, during testing, or when evaluating the coaching engine.
-- **How to use it:**
-  1. Navigate to **Voice Practice Studio**.
-  2. Click **Insert Sample Answer**.
-  3. Observe the calculated **132 WPM** pace, **1.5% filler word frequency**, and duration metrics.
-  4. Edit any word in the text box if you want to test specific vocabulary.
-- **Inputs:** Single click on **Insert Sample Answer**.
-- **Output:** Populated transcript, computed delivery meters, and active **Generate Evidence Coaching Report** button.
-- **Code Reference:**
-  - **Function:** `calculateSpeechMetrics(transcript, durationSeconds, pauses, pauseDuration)`
-  - **File:** `src/services/speechAnalysisService.ts`
-  - **Return:** `{ wpm: number, fillerCount: number, fillerPercentage: number, paceRating: string }`
-
----
-
-### 4. Evidence-Based Coaching Report
-
-![Coaching Report Generator](screenshots/04-evidence-coaching-report.png)
-
-- **Purpose:** Generates deep, structured rhetorical feedback evaluating the speaker's argument structure using the **PREP framework** (Point, Reason, Example, Point).
-- **Where to find it:** Click **Coaching Report** in the sidebar, or click **Generate Evidence Coaching Report** in the Voice Studio.
-- **Why it is useful:** Moves beyond vague praise to provide empirical quotes, ranked cognitive weaknesses, and concrete micro-drills for rapid speaking improvement.
-- **How to use it:**
-  1. Record or insert a speech practice transcript.
-  2. Click **Generate Evidence Coaching Report**.
-  3. Review the **PREP Structure Assessment** checkmarks (Main point, Reason, Concrete example, Conclusion).
-  4. Inspect **Strengths** with verbatim quotes and **Ranked Weaknesses** with alternative phrasing.
-  5. Read the rewritten **PREP Model Response** and try the recommended targeted drills.
-- **Inputs:** Sanitized transcript text and physical delivery metrics.
-- **Output:** Comprehensive evidence-based coaching card with confidence scoring and retest launcher.
-- **Code Reference:**
-  - **Component:** `src/components/studio/SpeechCoachingReportView.tsx`
-  - **Endpoint:** `POST /api/speech/analyze` in `server/index.ts`
-  - **AI Model:** `gemini-2.5-flash` with fallback to Groq, Cerebras, Ollama, and deterministic local heuristics.
+### `generateLocalSpeechCoachingReport`
+- **Location:** `src/services/speechAnalysisService.ts`
+- **Signature:**
+  ```typescript
+  export function generateLocalSpeechCoachingReport(
+    transcript: string,
+    promptTopic: string,
+    mode: SpeechPracticeMode,
+    difficulty: SpeechDifficulty,
+    durationSeconds: number,
+    detectedPauses: number = 0,
+    pauseDurationSeconds: number = 0,
+    previousReport?: SpeechCoachingReport
+  ): SpeechCoachingReport
+  ```
+- **Purpose:** Generates a structured, evidence-grounded coaching report conforming to the PREP framework when external AI APIs are offline or unreachable.
+- **Parameters:** See signature types.
+- **Return Value:** Full `SpeechCoachingReport` object featuring PREP structure evaluation, strengths with verbatim quotes, ranked weaknesses, alternative response, and micro-drills.
+- **Side Effects:** None.
+- **Dependencies:** `calculateSpeechMetrics`.
 
 ---
 
-### 5. The Thinking Gym
+## 2. AI Synthesis & Safety Engine
 
-![The Thinking Gym](screenshots/05-thinking-gym-catalog.png)
-
-- **Purpose:** Cognitive and analytical reasoning gym with exercises across 10 philosophical and critical thinking domains.
-- **Where to find it:** Click **The Thinking Gym** in the sidebar.
-- **Why it is useful:** Trains communicators to formulate rigorous, justified arguments before speaking, removing intellectual blindspots and cognitive fallacies.
-- **10 Available Domains:**
-  1. *Critical & Logical Thinking* (false cause fallacy audits)
-  2. *Fact vs. Opinion & Assumption Detection*
-  3. *Evidence Evaluation & Argument Construction* (Claim-Evidence-Reasoning)
-  4. *Cognitive Biases & Alternative Explanations*
-  5. *First-Principles & Systems Thinking*
-  6. *Creativity & Lateral Thinking* (inversion models)
-  7. *Problem-Solving & Decision-Making* (reversible vs. irreversible decisions)
-  8. *Probabilistic Reasoning & Uncertainty* (asymmetric risk)
-  9. *Perspective-Taking & Respectful Disagreement* (steel-manning)
-  10. *Metacognition & Self-Reflection* (auditing defensiveness)
-- **How to use it:**
-  1. Select a category tab at the top.
-  2. Read the scenario premise and prompt question.
-  3. Type your reasoned analysis into the response box.
-  4. Click **Evaluate with Cognitive Rubric**.
-- **Code Reference:**
-  - **Component:** `src/components/thinking/ThinkingGymView.tsx`
-  - **Exercises Dataset:** `src/data/speechAndThinkingData.ts`
+### `checkSafetyTriggers`
+- **Location:** `src/services/aiEngine.ts`
+- **Signature:**
+  ```typescript
+  export function checkSafetyTriggers(content: string): boolean
+  ```
+- **Purpose:** Evaluates text input for acute distress and self-harm keywords, triggering immediate compassionate crisis intervention modals.
+- **Parameters:** `content` (`string`): Diary reflection or query text.
+- **Return Value:** `boolean` (`true` if distress language detected; `false` otherwise).
+- **Side Effects:** When `true`, triggers `setSafetyAlertOpen(true)` in `AppContext.tsx`.
+- **Privacy Assurance:** Executes purely client-side; distress terms are never logged or stored.
 
 ---
 
-### 6. Introvert Practice Programme
-
-![Practice Programme](screenshots/07-introvert-program-curriculum.png)
-
-- **Purpose:** A 5-stage progressive desensitization pathway designed to systematically build vocal confidence from solo comfort to high-stakes group communication.
-- **Where to find it:** Click **Practice Programme** in the sidebar.
-- **5 Progressive Stages:**
-  - **Stage 1:** Private Speaking Practice (solo vocalization comfort).
-  - **Stage 2:** Clear & Structured Answers (PREP framing drills).
-  - **Stage 3:** AI Conversation Role-Play (tolerating silence and assertive inquiry).
-  - **Stage 4:** Group & Interview Simulations (multi-stakeholder alignment).
-  - **Stage 5:** Real-World Practice Challenges (transferring studio skills to everyday conversations).
-- **Controls:** Customize daily practice duration (5 min, 15 min, 30 min) and difficulty setting.
-- **Code Reference:**
-  - **Component:** `src/components/program/IntrovertProgramView.tsx`
+### `generateLocalAIReview`
+- **Location:** `src/services/aiEngine.ts`
+- **Signature:**
+  ```typescript
+  export function generateLocalAIReview(entry: DiaryEntry): AIDailyReview
+  ```
+- **Purpose:** Produces an 8-dimension psychological review (Dimensions A–H) for a saved diary entry using local natural language processing heuristics.
+- **Parameters:** `entry` (`DiaryEntry`): Saved user reflection record.
+- **Return Value:** `AIDailyReview` with cognitive distortion detection, decision quality analysis, and actionable tomorrow steps.
 
 ---
 
-### 7. Speech & Thinking Stats
+## 3. Analytics & Psychological Metrics
 
-![Speech & Thinking Stats](screenshots/08-speech-thinking-stats.png)
-
-- **Purpose:** Longitudinal visual dashboard tracking speaking pace (WPM), filler word reduction, and practice frequency across multiple sessions.
-- **Where to find it:** Click **Speech & Thinking Stats** in the sidebar.
-- **Why it is useful:** Gives introverted speakers objective, mathematical confirmation that their delivery is steadily improving over time.
-- **Metrics Displayed:**
-  - Pacing line graph against the optimal conversational band (130–165 WPM).
-  - Filler frequency reduction bar chart.
-  - Recurrent strengths counter.
-  - Complete history log of previous practice recordings.
-- **Code Reference:**
-  - **Component:** `src/components/progress/SpeechProgressView.tsx`
-
----
-
-### 8. Daily Diary Reflection
-
-![Daily Diary](screenshots/09-daily-diary.png)
-
-- **Purpose:** Distraction-free personal psychology diary for capturing daily events, thoughts, mood, and physical wellbeing metrics.
-- **Where to find it:** Click **Daily Diary** in the sidebar, or click **Write Today's Reflection**.
-- **Inputs:**
-  - Date selector.
-  - Numerical sliders for Mood (1–5), Energy (1–10), Stress (1–10), and Sleep (hours).
-  - Rich long-form journal textarea.
-  - Custom topic tags (e.g., `#communication`, `#deepwork`).
-- **Output:** Stored encrypted diary record ready for AI Daily Review.
-- **Code Reference:**
-  - **Component:** `src/components/diary/DailyDiary.tsx`
+### `recomputeDimensionsFromUserEntries`
+- **Location:** `src/services/analyticsService.ts`
+- **Signature:**
+  ```typescript
+  export function recomputeDimensionsFromUserEntries(
+    baseDimensions: PersonalDimension[],
+    entries: DiaryEntry[],
+    reviews: Record<string, AIDailyReview>
+  ): PersonalDimension[]
+  ```
+- **Purpose:** Transparently updates scores across all 30 psychological growth dimensions based on empirical evidence from diary entries and AI reviews.
+- **Parameters:** Base dimensions array, user entries, and review records.
+- **Return Value:** Updated `PersonalDimension[]` array with recalculated scores and score delta trends.
 
 ---
 
-### 9. AI Daily Review
-
-![AI Daily Review](screenshots/10-ai-daily-review.png)
-
-- **Purpose:** Psychological synthesis engine that reads the day's diary entry and generates an 8-dimension structured review (A through H).
-- **Where to find it:** Click **AI Daily Review** in the sidebar.
-- **The 8 Dimensions:**
-  - **A:** Executive Summary & Emotional Theme.
-  - **B:** Cognitive Distortion & Bias Detection.
-  - **C:** Decision-Making Quality & Rationale.
-  - **D:** Social & Interpersonal Dynamics.
-  - **E:** Habits & Behavioral Discipline.
-  - **F:** Energy, Sleep, and Stress Physical Correlations.
-  - **G:** Actionable Tomorrow Recommendations.
-  - **H:** Psychological Growth Dimension Delta Scoring.
-- **Code Reference:**
-  - **Component:** `src/components/review/AIDailyReviewView.tsx`
-  - **Engine:** `src/services/aiEngine.ts`
+### `calculateRadarData`
+- **Location:** `src/services/analyticsService.ts`
+- **Signature:**
+  ```typescript
+  export function calculateRadarData(dimensions: PersonalDimension[]): {
+    data: Array<{ subject: string; score: number; fullMark: number }>;
+    hasData: boolean;
+  }
+  ```
+- **Purpose:** Formats the 30 psychological dimensions into 6 high-level domain clusters for rendering in the Recharts radar visualization on the Overview Dashboard.
 
 ---
 
-### 10. Psychological Growth (30 Dimensions)
+## 4. Conversational Coach Service
 
-![Psychological Growth](screenshots/11-psychological-growth.png)
-
-- **Purpose:** Maps user reflection entries into 30 distinct psychological growth dimensions (e.g., Emotional Self-Regulation, Cognitive Flexibility, Boundary Setting, Intellectual Humility).
-- **Where to find it:** Click **Psychological Growth** in the sidebar.
-- **Why it is useful:** Replaces superficial self-help with transparent, multi-dimensional tracking of emotional and mental maturity.
-- **Code Reference:**
-  - **Component:** `src/components/growth/PsychologicalGrowth.tsx`
-  - **Dimension Definitions:** `src/data/dimensionsData.ts`
-
----
-
-### 11. Emotional Wellness
-
-![Emotional Wellness](screenshots/12-emotional-wellness.png)
-
-- **Purpose:** Tracks emotional fluctuations, identifies triggers, and guides evidence-backed regulation strategies.
-- **Where to find it:** Click **Emotional Wellness** in the sidebar.
-- **Code Reference:** `src/components/emotions/EmotionalWellness.tsx`
+### `generateCoachResponse`
+- **Location:** `src/services/coachService.ts`
+- **Signature:**
+  ```typescript
+  export function generateCoachResponse(
+    query: string,
+    entries: DiaryEntry[],
+    reviews: Record<string, AIDailyReview>,
+    dimensions: PersonalDimension[],
+    goals: Goal[]
+  ): { text: string; referencedDates: string[]; suggestedAction?: string }
+  ```
+- **Purpose:** Fallback conversational coach engine providing Socratic inquiry responses grounded in the user's recent journal history when the backend is offline.
 
 ---
 
-### 12. Social Intelligence
+## 5. State Management Context
 
-![Social Intelligence](screenshots/13-social-intelligence.png)
+### `useApp`
+- **Location:** `src/context/AppContext.tsx`
+- **Signature:**
+  ```typescript
+  export const useApp = (): AppContextType
+  ```
+- **Purpose:** React hook exposing the global application state, active navigation tab, diary entries, speech coaching reports, and mutation actions.
 
-- **Purpose:** Dedicated space for introverts to reflect on social interactions, audit social battery depletion, and practice assertive boundary setting.
-- **Where to find it:** Click **Social Intelligence** in the sidebar.
-- **Code Reference:** `src/components/social/SocialIntelligence.tsx`
-
----
-
-### 13. Critical Thinking Toolkit
-
-![Critical Thinking](screenshots/14-critical-thinking.png)
-
-- **Purpose:** Guided worksheet interface for deconstructing complex decisions, auditing cognitive assumptions, and stress-testing arguments.
-- **Where to find it:** Click **Critical Thinking** in the sidebar.
-- **Code Reference:** `src/components/critical/CriticalThinking.tsx`
-
----
-
-### 14. Habits & Discipline
-
-![Habits & Discipline](screenshots/15-habits-and-discipline.png)
-
-- **Purpose:** Habit consistency matrix allowing users to create routines, track streaks, and minimize execution friction.
-- **Where to find it:** Click **Habits & Discipline** in the sidebar.
-- **Code Reference:** `src/components/habits/HabitsAndDiscipline.tsx`
+### `sendCoachMessage`
+- **Location:** `src/context/AppContext.tsx`
+- **Signature:**
+  ```typescript
+  sendCoachMessage: (text: string) => Promise<ChatMessage>
+  ```
+- **Purpose:** Dispatches user queries to `/api/ai/coach`, stores the user and assistant messages in conversation state, and returns the created `ChatMessage` to eliminate duplicate network calls in consuming views.
 
 ---
 
-### 15. Goals & Action Plans
+## 6. Backend API Routes
 
-![Goals & Action Plans](screenshots/16-goals-and-action-plans.png)
+All routes are hosted on the Express backend (`http://localhost:3001`):
 
-- **Purpose:** Decomposes long-term aspirational goals into measurable monthly milestones and daily micro-actions.
-- **Where to find it:** Click **Goals & Action Plans** in the sidebar.
-- **Code Reference:** `src/components/goals/GoalsAndActionPlans.tsx`
-
----
-
-### 16. Weekly Review Retrospective
-
-![Weekly Review](screenshots/17-weekly-review.png)
-
-- **Purpose:** 7-day retrospective engine that synthesizes all diary entries and speech sessions from the past week into high-level achievements and next-week priorities.
-- **Where to find it:** Click **Weekly Review** in the sidebar.
-- **Code Reference:** `src/components/weekly/WeeklyReviewView.tsx`
+| Route | Method | Payload | Description |
+|---|---|---|---|
+| `/api/speech/analyze` | `POST` | `{ transcript, metrics, mode, difficulty }` | Generates evidence-based PREP coaching report. |
+| `/api/thinking/evaluate` | `POST` | `{ premise, promptQuestion, userResponse }` | Evaluates philosophical reasoning with cognitive rubrics. |
+| `/api/ai/coach` | `POST` | `{ query, entries, dimensions }` | Socratic AI coach conversational response. |
+| `/api/ai/analyze` | `POST` | `{ entry }` | 8-dimension AI Daily Review synthesis. |
+| `/api/ai/weekly-review` | `POST` | `{ entries, period }` | 7-day retrospective synthesis. |
 
 ---
 
-### 17. Reports & Data Export
+## 7. AI Provider Manager
 
-![Reports & Export](screenshots/18-reports-and-export.png)
-
-- **Purpose:** Comprehensive data export hub allowing users to download their complete reflection logs, metrics, and coaching reports as JSON or CSV files, or print printable PDF summaries.
-- **Where to find it:** Click **Reports & Export** in the sidebar.
-- **Code Reference:** `src/components/reports/MonthlyYearlyReports.tsx`
-
----
-
-### 18. Personal Insights Engine
-
-![Personal Insights](screenshots/19-personal-insights.png)
-
-- **Purpose:** Algorithmic correlation finder that uncovers subtle patterns between physical sleep, stress levels, speaking pace, and overall daily mood.
-- **Where to find it:** Click **Personal Insights** in the sidebar.
-- **Code Reference:** `src/components/insights/PersonalInsightsView.tsx`
+### `dispatchSpeechAnalysis`
+- **Location:** `server/ai/provider-manager.ts`
+- **Signature:**
+  ```typescript
+  export async function dispatchSpeechAnalysis(params: SpeechAnalysisParams): Promise<SpeechCoachingResult>
+  ```
+- **Purpose:** Orchestrates the multi-model waterfall cascade (Gemini &rarr; Groq &rarr; Cerebras &rarr; Ollama &rarr; Heuristic) for speech evaluation, enforcing request deduplication and budget allowances.
 
 ---
 
-### 19. Settings & Privacy Center
+## 8. Request Budget & Safeguards
 
-![Settings & Privacy](screenshots/20-settings-and-privacy.png)
-
-- **Purpose:** Local privacy control center for switching AI providers (Gemini, Groq, Cerebras, Ollama, Heuristic), auditing API quotas, resetting sample data, or wiping browser storage.
-- **Where to find it:** Click **Settings & Privacy** in the sidebar.
-- **Security Guarantee:** All API keys reside server-side in `.env`; local audio recordings can be permanently deleted with a single click.
-- **Code Reference:** `src/components/settings/SettingsAndPrivacy.tsx`
-
----
-
-### 20. Conversational AI Coach Drawer
-
-![AI Coach Drawer](screenshots/21-ai-coach-drawer.png)
-
-- **Purpose:** Slide-out interactive Socratic coach available on every screen for clarifying thoughts, asking communication questions, or receiving feedback on draft ideas.
-- **Where to find it:** Click **Ask AI Coach** in the sidebar or the **Coach** button in the top navigation header.
-- **Code Reference:** `src/components/coach/ConversationalCoachDrawer.tsx`
+### `canMakeRequest`
+- **Location:** `server/ai/budget-tracker.ts`
+- **Signature:**
+  ```typescript
+  export function canMakeRequest(): { allowed: boolean; reason?: string }
+  ```
+- **Purpose:** Checks current day request count against `DAILY_REQUEST_BUDGET=100` and current month count against `MONTHLY_REQUEST_BUDGET=2500`.
 
 ---
 
-### 21. Theme & Dark Mode Customization
+## 9. In-Flight Deduplication Lock
 
-![Theme Customization](screenshots/22-theme-customization.png)
-
-- **Purpose:** One-click color mode switcher toggling between Light, Dark, and System modes, with support for 4 curated aesthetic palettes (*MindMirror Warm Editorial*, *Ultra-Minimal Light*, *Pure Black & White*, and *Dark Minimal*).
-- **Where to find it:** Sun/Moon icon in the top right header, or inside **Settings & Privacy**.
-- **Code Reference:** `src/components/common/Header.tsx` and `src/index.css`
-
----
-
-### 22. Mental Health Safety Safeguard
-
-![Safety Modal](screenshots/23-safety-modal.png)
-
-- **Purpose:** Immediate compassionate interceptor that displays free, confidential 24/7 crisis resources (988 in US/Canada, 111 in UK, 13 11 14 in Australia) whenever acute distress or self-harm keywords are detected.
-- **Where to find it:** Click the **Shield icon** in the top header, or triggers automatically if severe distress phrases appear in a reflection.
-- **Code Reference:** `src/components/common/SafetyModal.tsx` and `checkSafetyTriggers()` in `src/services/aiEngine.ts`
+### `acquireDedupLock` & `releaseDedupLock`
+- **Location:** `server/ai/dedup-lock.ts`
+- **Signatures:**
+  ```typescript
+  export function acquireDedupLock(key: string): boolean
+  export function releaseDedupLock(key: string): void
+  ```
+- **Purpose:** In-memory lock preventing concurrent identical request execution caused by accidental double-clicks or duplicate triggers.

@@ -68,7 +68,7 @@ interface AppContextType {
   toggleAction: (id: string) => void;
   rateAction: (id: string, rating: 'helped' | 'neutral' | 'unhelpful') => void;
   deleteAction: (id: string) => void;
-  sendCoachMessage: (text: string) => void;
+  sendCoachMessage: (text: string) => Promise<ChatMessage>;
   setTheme: (theme: ThemeType) => void;
   setColorMode: (mode: ColorMode) => void;
   updatePreferences: (newPrefs: Partial<UserPreferences>) => void;
@@ -514,7 +514,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           suggestedAction: data.suggestedAction
         };
         setChatMessages(prev => [...prev, assistantMsg]);
-        return;
+        return assistantMsg;
       }
     } catch (err) {
       console.warn('[Coach] Backend AI coach unavailable, using client fallback.', err);
@@ -531,6 +531,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       suggestedAction: response.suggestedAction
     };
     setChatMessages(prev => [...prev, assistantMsg]);
+    return assistantMsg;
   };
 
   const generateAIWeeklyReview = async () => {

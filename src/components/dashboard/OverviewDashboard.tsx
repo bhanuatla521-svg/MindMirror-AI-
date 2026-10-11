@@ -147,25 +147,17 @@ export const OverviewDashboard: React.FC = () => {
     setInquirySuggestedAction(null);
     setReflectionQuery('');
 
-    // Keep conversation history in sync
-    sendCoachMessage(cleanQuery);
-
     try {
-      const res = await fetch('/api/ai/coach', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: cleanQuery, entries, dimensions })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setInquiryResponse(data.text);
-        setInquiryReferencedDates(data.referencedDates || []);
-        setInquirySuggestedAction(data.suggestedAction || null);
+      const assistantMsg = await sendCoachMessage(cleanQuery);
+      if (assistantMsg) {
+        setInquiryResponse(assistantMsg.text);
+        setInquiryReferencedDates(assistantMsg.referencedEntryDates || []);
+        setInquirySuggestedAction(assistantMsg.suggestedAction || null);
         setIsInquiryLoading(false);
         return;
       }
     } catch (err) {
-      console.warn('[Reflection] AI coach backend unavailable, using local synthesis.', err);
+      console.warn('[Reflection] AI coach response error, using local synthesis.', err);
     }
 
     // Local heuristic fallback
